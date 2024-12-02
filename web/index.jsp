@@ -1,4 +1,4 @@
-<%@ page import="java.util.*, java.sql.*" %>
+<%@ page import="java.util.*, java.sql.*, clases.ConnMysql" %>
 <%@ page language="java" contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -13,53 +13,76 @@
                 <th>Nombre</th>
                 <th>Nota</th>
                 <th>Fecha</th>
-                <th>Acciones</th>
+                <th colspan="2">Acciones</th>
             </tr>
         </thead>
         <tbody>
             <%
-                // Conexión a la base de datos
-                String url = "jdbc:mysql://localhost:3306/registros_db";
-                String user = "root";
-                String password = "root";
+                ConnMysql conexion = new ConnMysql();
+                Connection conn = conexion.getConnection();
                 
-                try (Connection conn = DriverManager.getConnection(url, user, password)) {
-                    String query = "SELECT * FROM registros";
-                    PreparedStatement ps = conn.prepareStatement(query);
-                    ResultSet rs = ps.executeQuery();
-                    
-                    while (rs.next()) {
-                        int id = rs.getInt("id");
-                        String nombre = rs.getString("nombre");
-                        int nota = rs.getInt("nota");
-                        Date fecha = rs.getDate("fecha");
+                if (conn != null) {
+                    try {
+                        String query = "SELECT * FROM alumnos";
+                        PreparedStatement ps = conn.prepareStatement(query);
+                        ResultSet rs = ps.executeQuery();
+
+                        while (rs.next()) {
+                            int id = rs.getInt("id");
+                            String nombre = rs.getString("nombre");
+                            int nota = rs.getInt("nota");
+                            java.sql.Date fecha = rs.getDate("fecha");
             %>
             <tr>
-                <td><%= nombre %></td>
-                <td><%= nota %></td>
-                <td><%= fecha %></td>
-                <td>
-                    <form action="EditarServlet" method="get" style="display:inline;">
-                        <input type="hidden" name="id" value="<%= id %>">
-                        <button type="submit">Editar</button>
-                    </form>
-                    <form action="BorrarServlet" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="<%= id %>">
-                        <button type="submit">Borrar</button>
-                    </form>
-                </td>
+                <!-- Formulario para editar -->
+                <form action="s2editar" method="post">
+                    <td>
+                        <!-- Campo Nombre, editable -->
+                        <input type="text" name="nombre" value="<%= nombre %>" />
+                    </td>
+                    <td>
+                        <!-- Campo Nota, editable -->
+                        <input type="number" name="nota" value="<%= nota %>" />
+                    </td>
+                    <td>
+                        <!-- Campo Fecha, editable -->
+                        <input type="date" name="fecha" value="<%= fecha %>" />
+                    </td>
+                    <td>
+                        <!-- Botón de editar, dentro del formulario -->
+                        <button type="submit" name="action" value="edit">Editar</button>
+                    </td>
+                    <input type="hidden" name="id" value="<%= id %>">
+                    <td>
+                        <!-- Formulario para borrar -->
+                <form action="s3borrar" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="<%= id %>">
+                    <button type="submit">Borrar</button>
+                </form>
+                    </td>
+                </form>
+                
+                
             </tr>
+
             <%
+                        }
+                        rs.close();
+                        ps.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        ConnMysql.cerrarConexion();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } else {
+                    out.println("<tr><td colspan='4'>No se pudo conectar a la base de datos.</td></tr>");
                 }
             %>
         </tbody>
     </table>
 
     <h2>Insertar</h2>
-    <form action="InsertarServlet" method="post">
+    <form action="s1insertar" method="post">
         <label for="nombre">Nuevo nombre</label>
         <input type="text" name="nombre" required>
         <br>

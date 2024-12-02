@@ -44,7 +44,7 @@ public class s1insertar extends HttpServlet {
       
          Connection miconexion = new ConnMysql().getConnection();
         
-            String query = "INSERT INTO registros (nombre, nota, fecha) VALUES (?, ?, ?)";
+            String query = "INSERT INTO alumnos (nombre, nota, fecha) VALUES (?, ?, ?)";
             try {
            
             PreparedStatement ps = miconexion.prepareStatement(query);
